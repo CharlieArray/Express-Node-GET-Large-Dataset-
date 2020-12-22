@@ -31,61 +31,62 @@ app.get('/movie', (req,res)=>{
     const {genre ="", country="", average_vote= ""} = req.query
 
     //string to float
-    const averageVoteNumber= parseInt(average_vote)
+    const avgVoteFloat = parseFloat(average_vote)
 
     //query param string trim/lowercase setup
-    const countryQueryParam = country.toLowerCase().trim();
+    const countryQueryParam = country.trim();
 
     //lower/trim string then uppercase first letter == movie data store format
-    const genreLowerTrim = genre.toLowerCase().trim();
-    let genreQueryParam= genreLowerTrim.charAt(0).toUpperCase()+genreLowerTrim.slice(1);
+    let genreQueryParam= genre.trim();
 
     const possibleCountries = ['canada',               
     'france', 'germany', 'great britain','hungary',
     'italy', 'israel', 'italy', 'spain',
     'japan', 'united states', 'china'];
 
-    const possibleGenres = {};
+    const possibleGenres = [];
     movieData.map( movie => {
+        //empty object, if value is at index position true, then returns that genre value to the possibleGenres object
         possibleGenres[movie.genre] = true
           
     });
 
-    console.log(possibleGenres);
+    // console.log(possibleGenres);
+
     let data = movieData
 
     // unhappy case: genre query param
-    if(genre && !possibleGenres[genreQueryParam]){
+
+    if(genre && !genreQueryParam){
             return res
                 .status(404)
                 .send('Please select a genre such as Action, Adventure, Comedy, Thriller')
     }
     else if (genre){
-       data = data.filter(movie => movie.genre.toLowerCase() == genreQueryParam.toLowerCase())
+       data = data.filter(movie => movie.genre.toLowerCase().includes(genreQueryParam.toLowerCase()))
     }
     
 
     // unhappy case: country query param
-    if(country && !possibleCountries.includes(countryQueryParam)){
-            console.log(country);
+    if(country && !countryQueryParam){
             return res
                 .status(404)
                 .send('Please select available country such as United States, Italy, France, Great Britain')
     }
     else if(country){
-        data = data.filter( movie => movie.country.toLowerCase() == countryQueryParam.toLowerCase())
+        data = data.filter( movie => movie.country.toLowerCase().includes(countryQueryParam.toLowerCase()));
     }
 
 
     // unhappy case: average vote
-    if(average_vote && Number.isNaN(averageVoteNumber)){
+    if(average_vote && Number.isNaN(avgVoteFloat)){
             return res
                 .status(404)
                 .send('average vote must be a number')           
     }
 
     else if(average_vote){
-        data = data.filter(movie => movie.avg_vote >= averageVoteNumber )
+        data = data.filter(movie => movie.avg_vote >= avgVoteFloat )
     }
 
     //happy basic response: no optional query params
